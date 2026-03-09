@@ -1,8 +1,10 @@
 ---
 layout: default
 ---
+
 {% comment %}
   Unified CV layout that handles both RenderCV (YAML) and JSONResume (JSON) formats
+
   - If page.cv_format is set, it determines which format to render:
     - 'rendercv': Load and render only RenderCV data (site.data.cv.cv)
     - 'jsonresume': Load and render only JSONResume data (site.data.resume)
@@ -10,7 +12,13 @@ layout: default
     - RenderCV data is in site.data.cv.cv
     - JSONResume data is in site.data.resume
     - RenderCV is prioritized if both exist
-  Both formats use the same unified rendering includes for consistent output
+
+  Both formats use the same unified rendering includes for consistent output.
+
+  This version is robust to:
+  - Missing sections (no concat crashes)
+  - Any custom section titles (fallback renderer)
+  - New sections that reuse an existing include (optional routing list below)
 {% endcomment %}
 
 <div class="post">
@@ -120,78 +128,130 @@ layout: default
           </div>
         {% endif %}
 
-        <!-- RenderCV Sections - Merge Experience and Volunteer -->
-        {% comment %} First, combine Experience and Volunteer entries {% endcomment %}
-        {% assign combined_experience = cv.sections.Experience | concat: cv.sections.Volunteer %}
-        {% if combined_experience.size > 0 %}
-          <a class="anchor" id="experience"></a>
-          <div class="card mt-3 p-3">
-            <h3 class="card-title font-weight-medium">Experience</h3>
-            <div>
-              {% assign entries = combined_experience %}
-              {% include cv/experience.liquid %}
-            </div>
-          </div>
-        {% endif %}
+        {% comment %} Render all other sections (any title), skipping ones already merged {% endcomment %}
+        {% if cv.sections %}
+          {% for section_pair in cv.sections %}
+            {% assign section_title = section_pair[0] %}
+            {% assign section_entries = section_pair[1] | default: empty %}
 
-        {% comment %} Now render all other sections except Experience and Volunteer {% endcomment %}
-        {% for section_pair in cv.sections %}
-          {% assign section_title = section_pair[0] %}
-          {% assign section_entries = section_pair[1] %}
+            {% if section_title == 'Volunteer' %}
+              {% continue %}
+            {% endif %}
 
-          {% comment %} Skip Experience and Volunteer as we've already processed them combined {% endcomment %}
-          {% if section_title == 'Experience' or section_title == 'Volunteer' %}
-            {% continue %}
-          {% endif %}
+            {% if section_entries.size == 0 %}
+              {% continue %}
+            {% endif %}
 
-          <a class="anchor" id="{{ section_title | slugify }}"></a>
-          <div class="card mt-3 p-3">
-            <h3 class="card-title font-weight-medium">{{ section_title }}</h3>
-            <div>
-              {% if section_title == 'Education' %}
-                {% assign entries = section_entries %}
-                {% include cv/education.liquid %}
-              {% elsif section_title == 'Awards' or section_title == 'Honors and Awards' %}
-                {% assign entries = section_entries %}
-                {% include cv/awards.liquid %}
-              {% elsif section_title == 'Publications' %}
-                {% assign entries = section_entries %}
-                {% include cv/publications.liquid %}
-              {% elsif section_title == 'Skills' %}
-                {% assign entries = section_entries %}
-                {% include cv/skills.liquid %}
-              {% elsif section_title == 'Languages' %}
-                {% assign entries = section_entries %}
-                {% include cv/languages.liquid %}
-              {% elsif section_title == 'Interests' or section_title == 'Academic Interests' %}
-                {% assign entries = section_entries %}
-                {% include cv/interests.liquid %}
-              {% elsif section_title == 'Certificates' %}
-                {% assign entries = section_entries %}
-                {% include cv/certificates.liquid %}
-              {% elsif section_title == 'Projects' or section_title == 'Open Source Projects' %}
-                {% assign entries = section_entries %}
-                {% include cv/projects.liquid %}
-              {% elsif section_title == 'References' %}
-                {% assign entries = section_entries %}
-                {% include cv/references.liquid %}
-              {% else %}
-                <!-- Generic section -->
-                {% for entry in section_entries %}
-                  {% if entry.bullet %}
-                    <ul class="card-text font-weight-light list-group list-group-flush">
-                      <li class="list-group-item">{{ entry.bullet | markdownify | remove: '<p>' | remove: '</p>' }}</li>
-                    </ul>
-                  {% elsif entry.label %}
-                    <div class="card-text font-weight-light">
-                      <strong>{{ entry.label }}:</strong> {{ entry.details }}
+            <a class="anchor" id="{{ section_title | slugify }}"></a>
+            <div class="card mt-3 p-3">
+              <h3 class="card-title font-weight-medium">{{ section_title }}</h3>
+              <div>
+                {% comment %}
+                  Route known section titles to dedicated renderers.
+                  Add your own aliases here (e.g., Internships -> experience).
+                {% endcomment %}
+
+                {% if section_title == 'Education' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/education.liquid %}
+
+                {% elsif section_title == 'Experience' or section_title == 'Internships' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/experience.liquid %}
+
+                {% elsif section_title == 'Awards' or section_title == 'Honors and Awards' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/awards.liquid %}
+
+                {% elsif section_title == 'Publications' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/publications.liquid %}
+
+                {% elsif section_title == 'Skills' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/skills.liquid %}
+
+                {% elsif section_title == 'Languages' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/languages.liquid %}
+
+                {% elsif section_title == 'Interests' or section_title == 'Academic Interests' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/interests.liquid %}
+
+                {% elsif section_title == 'Certificates' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/certificates.liquid %}
+
+                {% elsif section_title == 'Projects' or section_title == 'Open Source Projects' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/projects.liquid %}
+
+                {% elsif section_title == 'References' %}
+                  {% assign entries = section_entries %}
+                  {% include cv/references.liquid %}
+
+                {% else %}
+                  <!-- Generic section (robust fallback) -->
+                  {% for entry in section_entries %}
+                    <div class="mb-2">
+
+                      {% comment %} Heading line: choose the best available fields {% endcomment %}
+                      {% assign heading = entry.title | default: entry.position | default: entry.studyType | default: entry.name | default: entry.label %}
+                      {% assign org = entry.institution | default: entry.company | default: entry.organization %}
+
+                      {% if heading or org %}
+                        <div class="font-weight-bold">
+                          {% if heading %}{{ heading }}{% endif %}
+                          {% if heading and org %} — {% endif %}
+                          {% if org %}{{ org }}{% endif %}
+                        </div>
+                      {% endif %}
+
+                      {% if entry.location or entry.start_date or entry.end_date %}
+                        <div class="text-muted">
+                          {% if entry.location %}{{ entry.location }}{% endif %}
+                          {% if entry.location and (entry.start_date or entry.end_date) %} · {% endif %}
+                          {% if entry.start_date or entry.end_date %}{{ entry.start_date }} – {{ entry.end_date }}{% endif %}
+                        </div>
+                      {% endif %}
+
+                      {% if entry.summary %}
+                        <div class="font-weight-light">
+                          {{ entry.summary | markdownify | remove: '<p>' | remove: '</p>' }}
+                        </div>
+                      {% endif %}
+
+                      {% if entry.highlights %}
+                        <ul class="font-weight-light">
+                          {% for h in entry.highlights %}
+                            <li>{{ h | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+
+                      {% if entry.keywords %}
+                        <div class="font-weight-light">{{ entry.keywords }}</div>
+                      {% endif %}
+
+                      {% if entry.bullet %}
+                        <ul class="card-text font-weight-light list-group list-group-flush">
+                          <li class="list-group-item">{{ entry.bullet | markdownify | remove: '<p>' | remove: '</p>' }}</li>
+                        </ul>
+                      {% endif %}
+
+                      {% if entry.label and entry.details %}
+                        <div class="card-text font-weight-light">
+                          <strong>{{ entry.label }}:</strong> {{ entry.details }}
+                        </div>
+                      {% endif %}
                     </div>
-                  {% endif %}
-                {% endfor %}
-              {% endif %}
+                  {% endfor %}
+                {% endif %}
+              </div>
             </div>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        {% endif %}
 
       {% elsif render_jsonresume and site.data.resume %}
         {% comment %} JSONResume format {% endcomment %}
@@ -257,8 +317,11 @@ layout: default
           </div>
         {% endif %}
 
-        <!-- JSONResume Sections - Merge work and volunteer into Experience -->
-        {% assign combined_experience = site.data.resume.work | concat: site.data.resume.volunteer %}
+        <!-- JSONResume Sections - Merge work and volunteer into Experience (nil-safe) -->
+        {% assign work = site.data.resume.work | default: empty %}
+        {% assign volunteer = site.data.resume.volunteer | default: empty %}
+        {% assign combined_experience = work | concat: volunteer %}
+
         {% if combined_experience.size > 0 %}
           <a class="anchor" id="experience"></a>
           <div class="card mt-3 p-3">
@@ -271,108 +334,117 @@ layout: default
         {% endif %}
 
         <!-- Education -->
-        {% if site.data.resume.education.size > 0 %}
+        {% assign edu = site.data.resume.education | default: empty %}
+        {% if edu.size > 0 %}
           <a class="anchor" id="education"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Education</h3>
             <div>
-              {% assign entries = site.data.resume.education %}
+              {% assign entries = edu %}
               {% include cv/education.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Awards -->
-        {% if site.data.resume.awards.size > 0 %}
+        {% assign awards = site.data.resume.awards | default: empty %}
+        {% if awards.size > 0 %}
           <a class="anchor" id="awards"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Awards</h3>
             <div>
-              {% assign entries = site.data.resume.awards %}
+              {% assign entries = awards %}
               {% include cv/awards.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Publications -->
-        {% if site.data.resume.publications.size > 0 %}
+        {% assign pubs = site.data.resume.publications | default: empty %}
+        {% if pubs.size > 0 %}
           <a class="anchor" id="publications"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Publications</h3>
             <div>
-              {% assign entries = site.data.resume.publications %}
+              {% assign entries = pubs %}
               {% include cv/publications.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Skills -->
-        {% if site.data.resume.skills.size > 0 %}
+        {% assign skills = site.data.resume.skills | default: empty %}
+        {% if skills.size > 0 %}
           <a class="anchor" id="skills"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Skills</h3>
             <div>
-              {% assign entries = site.data.resume.skills %}
+              {% assign entries = skills %}
               {% include cv/skills.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Languages -->
-        {% if site.data.resume.languages.size > 0 %}
+        {% assign langs = site.data.resume.languages | default: empty %}
+        {% if langs.size > 0 %}
           <a class="anchor" id="languages"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Languages</h3>
             <div>
-              {% assign entries = site.data.resume.languages %}
+              {% assign entries = langs %}
               {% include cv/languages.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Interests -->
-        {% if site.data.resume.interests.size > 0 %}
+        {% assign interests = site.data.resume.interests | default: empty %}
+        {% if interests.size > 0 %}
           <a class="anchor" id="interests"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Interests</h3>
             <div>
-              {% assign entries = site.data.resume.interests %}
+              {% assign entries = interests %}
               {% include cv/interests.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Certificates -->
-        {% if site.data.resume.certificates.size > 0 %}
+        {% assign certs = site.data.resume.certificates | default: empty %}
+        {% if certs.size > 0 %}
           <a class="anchor" id="certificates"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Certificates</h3>
             <div>
-              {% assign entries = site.data.resume.certificates %}
+              {% assign entries = certs %}
               {% include cv/certificates.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- Projects -->
-        {% if site.data.resume.projects.size > 0 %}
+        {% assign projects = site.data.resume.projects | default: empty %}
+        {% if projects.size > 0 %}
           <a class="anchor" id="projects"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">Projects</h3>
             <div>
-              {% assign entries = site.data.resume.projects %}
+              {% assign entries = projects %}
               {% include cv/projects.liquid %}
             </div>
           </div>
         {% endif %}
 
         <!-- References -->
-        {% if site.data.resume.references.size > 0 %}
+        {% assign refs = site.data.resume.references | default: empty %}
+        {% if refs.size > 0 %}
           <a class="anchor" id="references"></a>
           <div class="card mt-3 p-3">
             <h3 class="card-title font-weight-medium">References</h3>
             <div>
-              {% assign entries = site.data.resume.references %}
+              {% assign entries = refs %}
               {% include cv/references.liquid %}
             </div>
           </div>
