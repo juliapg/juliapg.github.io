@@ -25,6 +25,6 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I am interested in how deep learning can be used to advance medical and biological imaging. I obtained my PhD degree from the CREATIS lab of INSA Lyon on May 2025 on the subject of accelerating cardiac ultrasound processing with deep learning.
+I am interested in how deep learning can be used to advance medical and biological imaging. I obtained my PhD degree from INSA Lyon on May 2025 on the subject of accelerating cardiac ultrasound processing with deep learning. I was part of the [MYRIAD team](https://creatis-myriad.github.io./) in the [CREATIS Lab](https://www.creatis.insa-lyon.fr/site/fr/).
 
-Previously, I graduated from the BSc in Mathematics at Universitat Politècnica de Catalunya (UPC) and from the MSc in Applied and Industrial Mathematics at Université Grenobles-Alpes (UGA) and ENSIMAG. 
+Previously, I graduated from the [BSc in Mathematics](https://fme.upc.edu/en/studies/degrees/bachelors-degree-in-mathematics-1) at Universitat Politècnica de Catalunya (UPC) and from the [MSc in Applied and Industrial Mathematics](https://ensimag.grenoble-inp.fr/fr/formation/master-of-science-in-industrial-and-applied-mathematics#page-presentation) at Université Grenobles-Alpes (UGA) and ENSIMAG. 

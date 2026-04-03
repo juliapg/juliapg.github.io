@@ -162,7 +162,7 @@ collections:
       layout: post
     output: true
   projects:
-    output: true
+    output: false
   teachings:
     output: true
 
@@ -210,11 +210,9 @@ exclude:
   - _pages/repositories.md
   - _pages/books.md
   - _pages/dropdown.md
-  - _pages/projects.md
   - _pages/news.md
   - _pages/profiles.md
   - _posts/
-  - _projects/
   - assets/jupyter/blog.ipynb
 keep_files:
   - CNAME

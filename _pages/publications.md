@@ -19,6 +19,7 @@ nav_order: 2
 - **J. Puig**, F. Millioz, D. Garcia, D. Friboulet. "Complex-Valued CNNs for Phase Shift Estimation in Color Doppler Imaging", *IEEE International Ultrasonics Symposium* (IUS), 2023, Montreal, Canada. (Oral presentation)
 
 ## National conferences
+- **J. Puig**, F. Millioz, D. Garcia, J. Cohen. "Separation of blood and tissue signals in echocardiography using autoencoders", *Colloque Français d’Intelligence Artificielle en Imagerie Biomédicale* (IABM), 2026, Lyon, France. (Poster)
 - **J. Puig**, F. Millioz, D. Garcia, D. Friboulet. "Filtre de paroi par apprentissage profond pour l’estimation de vitesse Doppler en échocardographie", GRETSI 2025 - *Colloque Francophone de Traitement du Signal et des Images*, 2025, Strasbourg, France.
 - **J. Puig**, D. Friboulet, J. Porée, J. Provost, D. Garcia, F. Millioz. "Accelerating the frame rate of echocardiography with deep learning", *Colloque Français d’Intelligence Artificielle en Imagerie Biomédicale* (IABM), 2025, Nice, France. (Poster)
 - **J. Puig**, F. Millioz, D. Garcia, D. Friboulet. "Clutter filtering in echocardiography with deep learning", *Colloque Français d’Intelligence Artificielle en Imagerie Biomédicale* (IABM), 2024, Grenoble, France. (Poster)

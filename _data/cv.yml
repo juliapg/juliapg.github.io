@@ -7,7 +7,7 @@ cv:
     Education:
       - institution: CREATIS Lab, INSA Lyon
         location: Lyon, France
-        studyType: PhD in Signal and image processing
+        studyType: PhD in Signal and Image Processing
         start_date: 2021
         end_date: 2025
 
@@ -60,10 +60,12 @@ cv:
           - npj Digital Medicine
       - name: Science communication
         highlights:
-          - Workshop on basics of signal processing for primary school students
+          - "[Workshop](https://www.creatis.insa-lyon.fr/site/fr/animation-scientifique-grand-public-atelier-trace-ton-son) on basics of signal processing for primary school students"
           - Workshop on research careers and women in science for primary school students
+          - "Participation to a [podcast](https://open.spotify.com/episode/4K7tFBMAT4T0hfnNQCJu2f) on sound and the Doppler effect for the general public"
       - name: Conference staff volunteer
         highlights:
+          - French Workshop on AI for Biomedical Imaging (IABM) (Lyon, March 2026)
           - Functional Imaging and Modelling of the Heart (FIMH) (Lyon, June 2023)
           - Spring school on Deep Learning for Medical Imaging (DLMI) (Lyon, April 2023)
 
